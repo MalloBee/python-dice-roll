@@ -3,7 +3,7 @@
 Usage:
 
     $ python dice.py
-    How many dice do you want to roll? [1-6] 5
+    How many dice do you want to roll? [any number] 5
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~ RESULTS ~~~~~~~~~~~~~~~~~~~~~~~~~
 ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐
@@ -14,6 +14,7 @@ Usage:
 """
 
 import random
+import math
 
 DICE_ART = {
     1: (
@@ -62,19 +63,19 @@ DICE_ART = {
 DIE_HEIGHT = len(DICE_ART[1])
 DIE_WIDTH = len(DICE_ART[1][0])
 DIE_FACE_SEPARATOR = " "
-
+MAX_DICE_PER_ROW = 6
 
 def parse_input(input_string):
-    """Return `input_string` as an integer between 1 and 6.
+    """Return `input_string` as an integer.
 
-    Check if `input_string` is an integer number between 1 and 6.
+    Check if `input_string` is an integer number.
     If so, return an integer with the same value. Otherwise, tell
     the user to enter a valid number and quit the program.
     """
-    if input_string.strip() in {"1", "2", "3", "4", "5", "6"}:
+    if input_string.isnumeric():
         return int(input_string)
     else:
-        print("Please enter a number from 1 to 6.")
+        print("Please enter a number.")
         raise SystemExit(1)
 
 
@@ -125,18 +126,25 @@ def _get_dice_faces(dice_values):
 
 def _generate_dice_faces_rows(dice_faces):
     dice_faces_rows = []
-    for row_idx in range(DIE_HEIGHT):
-        row_components = []
-        for die in dice_faces:
-            row_components.append(die[row_idx])
-        row_string = DIE_FACE_SEPARATOR.join(row_components)
-        dice_faces_rows.append(row_string)
+    for n_dice_row in range(_round_up(len(dice_faces)/MAX_DICE_PER_ROW)):
+        for row_idx in range(DIE_HEIGHT):
+            row_components = []
+            for die in dice_faces[n_dice_row*MAX_DICE_PER_ROW:(1+n_dice_row)*MAX_DICE_PER_ROW]:
+                row_components.append(die[row_idx])
+            row_string = DIE_FACE_SEPARATOR.join(row_components)
+            dice_faces_rows.append(row_string)
     return dice_faces_rows
+
+def _round_up(n, decimals=0):
+    multiplier = 10 ** decimals
+    return int(math.ceil(n * multiplier) / multiplier)
+
+
 
 
 # ~~~ App's main code block ~~~
 # 1. Get and validate user's input
-num_dice_input = input("How many dice do you want to roll? [1-6] ")
+num_dice_input = input("How many dice do you want to roll? [any number] ")
 num_dice = parse_input(num_dice_input)
 # 2. Roll the dice
 roll_results = roll_dice(num_dice)
